@@ -1,4 +1,21 @@
 <?php
+defined('C5_EXECUTE') or die(_("Access Denied."));
+class ApiConnect Extends Model{
+	
+	var $u;
+	var $key;
+	
+	public function __construct($token){
+		$db = Loader::db();
+		$q = "SELECT uID FROM radiantwebApiAuth WHERE token = ?";
+		$uID = $db->getOne($q,array($token));
+		Loader::model('userinfo');
+		$this->key = $token;
+		$this->u = UserInfo::getByID($uID);
+	}
+
+}
+
 class ApiAuthenticate Extends Model{
 
 	var $error_message;
@@ -10,7 +27,10 @@ class ApiAuthenticate Extends Model{
 		$db = Loader::db();
 		$uID = $db->getOne("SELECT uID FROM radiantwebApiAuth WHERE token='$token'");
 		
-		if($uID){
+		$ui = UserInfo::getByID($uID);
+		$key = $ui->getAttribute('c5_api_key');
+		
+		if($key == $token){
 			return array('id'=>$uID,'error'=>null);
 		}else{
 			return array('error'=>'ERROR: this auth key appears to be invalid!');
@@ -63,12 +83,19 @@ class ApiAuthenticate Extends Model{
 			//return $uo;
 			$groups = $uo->uGroups;
 			if(in_array('Administrators',$groups) || $uo->superUser == 1){
-				$token = ApiAuthenticate::createUniqueID();
-				$uID = $u->uID;
-				$db = Loader::db();
-				$db->Execute("INSERT INTO radiantwebApiAuth (token,uID) VALUES (?,?)",array($token,$uID));
-				
-				return $token;
+				$key = $ui->getAttribute('c5_api_key');
+				if($key){
+					return $key;
+				}else{
+					$token = ApiAuthenticate::createUniqueID();
+					$uID = $u->uID;
+					$db = Loader::db();
+					$db->Execute("INSERT INTO radiantwebApiAuth (token,uID) VALUES (?,?)",array($token,$uID));
+					Loader::model('attribute/categories/user');
+					$ak = UserAttributeKey::getByHandle('c5_api_key');
+					$ui->setAttribute($ak,$token);
+					return $token;
+				}
 			}else{
 				$error = t('ERROR: This user does not have Admin privileges.');
 				return $error;
@@ -92,12 +119,4 @@ class ApiAuthenticate Extends Model{
 	
 	}
 
-}
-
-class ApiSpecialFunctions Extends Model{
-	
-	public function setMaintenanceMode($value){
-		Config::save('SITE_MAINTENANCE_MODE',$value);
-		return 'success';
-	}
 }

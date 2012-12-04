@@ -21,14 +21,27 @@ class RadiantwebApiPackage extends Package {
 		$pkg = parent::install();
 		
 		Loader::model('single_page');
-		SinglePage::add('/api/', $pkg);
-		
-		// install pages
-		$iak = CollectionAttributeKey::getByHandle('icon_dashboard');
-		
-		$cp = SinglePage::add('/dashboard/radiantweb_api/', $pkg);
-        $cp->update(array('cName'=>t('RESTfull C5 API'), 'cDescription'=>t('RadiantWeb C5 API')));
-        $cp->setAttribute($iak,'icon-list-alt');
+		$api = SinglePage::add('/api/', $pkg);
+		$api->setAttribute('exclude_nav',1);
+		$api->setAttribute('exclude_page_list',1);
+		$api->setAttribute('exclude_sitemapxml',1);
+
+        
+		$textt = AttributeType::getByHandle('text'); 
+		$apikey = UserAttributeKey::getByHandle('c5_api_key'); 
+		if( !is_object($apikey) ) {
+		 	UserAttributeKey::add($textt, 
+		 	array('akHandle' => 'c5_api_key', 
+		 	'akName' => t('API Key'), 
+		 	'akIsSearchable' => false, 
+		 	'uakProfileEdit' => false, 
+		 	'uakProfileEditRequired'=> false, 
+		 	'uakRegisterEdit' => false, 
+		 	'uakProfileEditRequired'=>false
+		 	),$pkg);
+		 }
+        
+        Cache::flush();
 	}
 	
 	public function on_start(){

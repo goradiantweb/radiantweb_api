@@ -1,8 +1,6 @@
 <?php 
 defined('C5_EXECUTE') or die(_("Access Denied.")); 
 
-Loader::model('radiantweb_api','radiantweb_api');
-
 
 class ApiController extends Controller {
 
@@ -17,7 +15,7 @@ class ApiController extends Controller {
 	
 	public function view($method,$id = null){
 		
-		$request_method = strtolower($_REQUEST['rest']);
+		$request_method = strtolower($_POST['rest']);
 
 		if(!$request_method){
 			$request_method = strtolower($_SERVER['REQUEST_METHOD']);
@@ -25,7 +23,7 @@ class ApiController extends Controller {
 
 		$by = ($id) ? 'ByID' : '';
 		
-		$this->data = $_REQUEST;
+		$this->data = $_POST;
 		$this->method = $request_method;
 		
 		$this->loadRequiredModels();
@@ -219,7 +217,7 @@ class ApiController extends Controller {
 			
 			case 'request':
 				if(substr_count($method,'Authenticate') > 0){
-					$auth = ApiAuthenticate::generateToken($_REQUEST['user'],$_REQUEST['pass']);
+					$auth = ApiAuthenticate::generateToken($_POST['user'],$_POST['pass']);
 					print $auth;
 				}
 				break;
@@ -270,6 +268,7 @@ class ApiController extends Controller {
 	    Loader::model('user_list');
 	    Loader::model('userinfo');
 	    Loader::model('groups');
+	    Loader::model('radiantweb_api','radiantweb_api');
 	}
 
 }

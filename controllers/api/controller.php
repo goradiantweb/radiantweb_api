@@ -15,23 +15,15 @@ class ApiController extends Controller {
 	
 	public function view($method,$id = null){
 		
-		$request_method = strtolower($_REQUEST['rest']);
+		$request_method = strtolower($_POST['rest']);
 
-		if(!$request_method || $request_method == ''){
+		if(!$request_method){
 			$request_method = strtolower($_SERVER['REQUEST_METHOD']);
-			
-			if($request_method == 'put' || $request_method == 'delete'){
-				// Make a blank array called $_PUT
-				$_REQUEST = array();
-				// Read contents from the standard input buffer
-				//covert to $_PUT
-				parse_str(file_get_contents("php://input"),$_REQUEST);
-			}
 		}
 
 		$by = ($id) ? 'ByID' : '';
 		
-		$this->data = $_REQUEST;
+		$this->data = $_POST;
 		$this->method = $request_method;
 		
 		$this->loadRequiredModels();
@@ -50,8 +42,8 @@ class ApiController extends Controller {
 						// - num : number (12)
 						$call = New $method();
 						$func = $request_method;
-						if(is_array($_REQUEST['filters'])){
-							foreach($_REQUEST['filters'] as $filter){
+						if(is_array($_POST['filters'])){
+							foreach($_POST['filters'] as $filter){
 								$column = $filter['column'];
 								$modifier = $filter['modifier'];
 								$value = $filter['value'];
@@ -72,8 +64,8 @@ class ApiController extends Controller {
 									$call_response['id'] = $item->getCollectionID();
 									$call_response['path'] = $nh->getLinkToCollection($item);
 
-									if(is_array($_REQUEST['attributes'])){
-										foreach($_REQUEST['attributes'] as $label=>$attribute){
+									if(is_array($_POST['attributes'])){
+										foreach($_POST['attributes'] as $label=>$attribute){
 											$call_response[$label] = $item->getAttribute($attribute);
 										}
 									}
@@ -96,9 +88,9 @@ class ApiController extends Controller {
 						// any output
 						$func = $request_method.$by;
 						$call_object = $method::$func($id);
-						if(is_array($_REQUEST['attributes'])){
+						if(is_array($_POST['attributes'])){
 							$call_response = array();
-							foreach($_REQUEST['attributes'] as $label=>$attribute){
+							foreach($_POST['attributes'] as $label=>$attribute){
 								$call_action = $request_method.$attribute;
 								$call_response[$label] = $call_object->$call_action();
 							}
@@ -107,29 +99,25 @@ class ApiController extends Controller {
 					}elseif(substr_count($method,'Custom') > 0){
 	
 						//Custom->model,Custom->method,Custom->package
-						$auth = ApiAuthenticate::checkToken($_REQUEST['token']);
+						$auth = ApiAuthenticate::checkToken($_POST['token']);
 						if($auth['id']) {
-							$model = $_REQUEST['model'];
-							$package = $_REQUEST['package'];
-							$class = $_REQUEST['class'];
-							$func = $_REQUEST['funct'];
+							$model = $_POST['model'];
+							$package = $_POST['package'];
+							$class = $_POST['class'];
+							$func = $_POST['funct'];
 							
 							Loader::model($model,$package);
 							
 							$call_object = New $class();
 							
 							if($func){
-								$call_response = $call_object->$func($_REQUEST['value']);
+								$call_response = $call_object->$func($_POST['value']);
 							}else{
 								$call_response = $call_object;
 							}
 						}else{
 							$call_response = $auth['error'];
 						}
-						
-					}elseif(substr_count($method,'Authenticate') > 0){
-					
-						$call_response = ApiAuthenticate::generateToken($_REQUEST['user'],$_REQUEST['pass']);
 						
 					}else{
 						// Page::getByID($id), User::getByUserID($id), File::getByID($id)
@@ -142,7 +130,7 @@ class ApiController extends Controller {
 						$call_response = $call->$func($id);
 					}
 					
-					if($_REQUEST['return'] == 'html'){
+					if($_POST['return'] == 'html'){
 						print $call_response;
 					}else{
 						print @json_encode($call_response);
@@ -153,76 +141,42 @@ class ApiController extends Controller {
 				}
 				break;
 				
-			case 'put':
-
-				if($this->allowedMethods($method)){	
-					if(substr_count($method,'Custom') > 0){
-						$auth = ApiAuthenticate::checkToken($_REQUEST['token']);
-						if($auth['id']) {
+			case 'update':
+				$auth = ApiAuthenticate::checkToken($_POST['token']);
+				if($auth['id']) {
+					if($this->allowedMethods($method)){	
+	
+						$call = New $method($id);
+						
+						if(substr_count($method,'User') > 0){
+							Loader::model('userinfo');
+							$ui = UserInfo::getByID($id);
 							
-							$model = $_REQUEST['model'];
-							$package = $_REQUEST['package'];
-							$class = $_REQUEST['class'];
-							$func = $_REQUEST['funct'];
-							
-							Loader::model($model,$package);
-							
-							$call_object = New $class();
-							
-							if($func){
-								$call_response = $call_object->$func($_REQUEST['value']);
+							if($ui->uID){
+								if(is_array($_POST['attributes'])){
+									$call_response = array();
+									foreach($_POST['attributes'] as $label=>$attribute){
+										$ak = UserAttributeKey::getByHandle(str_replace(' ','_',strtolower($label)));
+										$ui->setAttribute($ak,$attribute);
+									}
+								}
+								
+								print json_encode('SUCCESS');
 							}else{
-								$call_response = $call_object;
+								print json_encode('ERROR: no user found matching this ID');
 							}
-
-						}else{
-							$call_response = $auth['error'];
 						}
 					}
 					
-					if($_REQUEST['return'] == 'html'){
-						print $call_response;
-					}else{
-						print @json_encode($call_response);
-					}
+					exit;
 				}else{
-					print json_encode('ERROR: this method is not allowed');
+					print json_encode($auth['error']);
+					exit;
 				}
-				
 				
 				break;
 				
 			case 'delete':
-				if(substr_count($method,'Custom') > 0){
-	
-					//Custom->model,Custom->method,Custom->package
-					$auth = ApiAuthenticate::checkToken($_REQUEST['token']);
-					if($auth['id']) {
-						$model = $_REQUEST['model'];
-						$package = $_REQUEST['package'];
-						$class = $_REQUEST['class'];
-						$func = $_REQUEST['funct'];
-						
-						Loader::model($model,$package);
-						
-						$call_object = New $class();
-						
-						if($func){
-							$call_response = $call_object->$func($_REQUEST['value']);
-						}else{
-							$call_response = $call_object;
-						}
-					}else{
-						$call_response = $auth['error'];
-					}
-					
-				}
-				
-				if($_REQUEST['return'] == 'html'){
-					print $call_response;
-				}else{
-					print @json_encode($call_response);
-				}
 				
 				break;
 			
@@ -230,19 +184,19 @@ class ApiController extends Controller {
 				if($this->allowedMethods($method)){	
 					if(substr_count($method,'Custom') > 0){
 						//Custom->model,Custom->method,Custom->package
-						$auth = ApiAuthenticate::checkToken($_REQUEST['token']);
+						$auth = ApiAuthenticate::checkToken($_POST['token']);
 						if($auth['id']) {
-							$model = $_REQUEST['model'];
-							$package = $_REQUEST['package'];
-							$class = $_REQUEST['class'];
-							$func = $_REQUEST['funct'];
+							$model = $_POST['model'];
+							$package = $_POST['package'];
+							$class = $_POST['class'];
+							$func = $_POST['funct'];
 							
 							Loader::model($model,$package);
 							
 							$call_object = New $class();
 							
 							if($func){
-								$call_response = $call_object->$func($_REQUEST['value']);
+								$call_response = $call_object->$func($_POST['value']);
 							}else{
 								$call_response = $call_object;
 							}
@@ -252,17 +206,22 @@ class ApiController extends Controller {
 						}
 						
 					}
+					
+					if($_POST['return'] == 'html'){
+						print $call_response;
+					}else{
+						print @json_encode($call_response);
+					}
 				}
-				
-				if($_REQUEST['return'] == 'html'){
-					print $call_response;
-				}else{
-					print @json_encode($call_response);
+				break;
+			
+			case 'request':
+				if(substr_count($method,'Authenticate') > 0){
+					$auth = ApiAuthenticate::generateToken($_POST['user'],$_POST['pass']);
+					print $auth;
 				}
-				
 				break;
 			}
-			
 		exit;
 	}
 	

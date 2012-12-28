@@ -6,7 +6,7 @@ class RadiantwebApiPackage extends Package {
 
 	protected $pkgHandle = 'radiantweb_api';
 	protected $appVersionRequired = '5.4.1';
-	protected $pkgVersion = '1.0.0';
+	protected $pkgVersion = '1.1.0';
 	
 	public function getPackageDescription() {
 		return t("RESTfull C5 API");

@@ -140,6 +140,7 @@ A Flexible Passthrough RESTfull API for Concrete5 with User,Page,Files, and Cust
 	//Javascript Passthrough API example
 	// where custom package models and functions can
 	// be utilized.
+	// all custom API hooks must be token Authenticated
 	/**********************************************/
 	
 	/*

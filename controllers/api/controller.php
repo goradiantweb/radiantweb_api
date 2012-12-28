@@ -156,10 +156,10 @@ class ApiController extends Controller {
 			case 'put':
 
 				if($this->allowedMethods($method)){	
-					if(substr_count($method,'Custom') > 0){
-						$auth = ApiAuthenticate::checkToken($_REQUEST['token']);
-						if($auth['id']) {
-							
+					$auth = ApiAuthenticate::checkToken($_REQUEST['token']);
+					if($auth['id']) {
+						if(substr_count($method,'Custom') > 0){
+				
 							$model = $_REQUEST['model'];
 							$package = $_REQUEST['package'];
 							$class = $_REQUEST['class'];
@@ -175,9 +175,48 @@ class ApiController extends Controller {
 								$call_response = $call_object;
 							}
 
-						}else{
-							$call_response = $auth['error'];
-						}
+						}elseif(substr_count($method,'User') > 0){
+						
+							Loader::model('userinfo');
+							$ui = UserInfo::getByID($id);
+							if($ui->uID){
+								if(is_array($_REQUEST['attributes'])){
+									$call_response = array();
+									foreach($_REQUEST['attributes'] as $label=>$attribute){
+										$ak = UserAttributeKey::getByHandle(str_replace(' ','_',strtolower($label)));
+										if($ak){
+											$ui->setAttribute($ak,$attribute);
+										}
+									}
+								}
+								
+								$call_response = 'SUCCESS';
+							}else{
+								$call_response = 'ERROR: no user found matching this ID';
+ 							}
+
+						}elseif(substr_count($method,'Page') > 0){
+							
+							$p = Page::getByID($id);
+							if($p->getCollectionID()){
+								if(is_array($_REQUEST['attributes'])){
+									$call_response = array();
+									foreach($_REQUEST['attributes'] as $label=>$attribute){
+										$ak = UserAttributeKey::getByHandle(str_replace(' ','_',strtolower($label)));
+										if($ak){
+											$p->setAttribute($ak,$attribute);
+										}
+									}
+								}
+								
+								$call_response = 'SUCCESS';
+							}else{
+								$call_response = 'ERROR: no Page found matching this ID';
+ 							}
+ 						}
+
+					}else{
+						$call_response = $auth['error'];
 					}
 					
 					if($_REQUEST['return'] == 'html'){

@@ -124,7 +124,8 @@ class ApiController extends Controller {
 								$call_response = $call_object;
 							}
 						}else{
-							$call_response = $auth['error'];
+							$this->getResponse('401',$auth['error']);
+							exit;
 						}
 						
 					}elseif(substr_count($method,'Authenticate') > 0){
@@ -142,14 +143,11 @@ class ApiController extends Controller {
 						$call_response = $call->$func($id);
 					}
 					
-					if($_REQUEST['return'] == 'html'){
-						print $call_response;
-					}else{
-						print @json_encode($call_response);
-					}
+					$this->getResponse('200',$call_response);
 					exit;
 				}else{
-					print json_encode('ERROR: this method is not allowed');
+					$this->getResponse('405','ERROR: this method is not allowed');
+					exit;
 				}
 				break;
 				
@@ -193,6 +191,8 @@ class ApiController extends Controller {
 								$call_response = 'SUCCESS';
 							}else{
 								$call_response = 'ERROR: no user found matching this ID';
+								$this->getResponse('400',$call_response);
+								exit;
  							}
 
 						}elseif(substr_count($method,'Page') > 0){
@@ -212,22 +212,23 @@ class ApiController extends Controller {
 								$call_response = 'SUCCESS';
 							}else{
 								$call_response = 'ERROR: no Page found matching this ID';
+								$this->getResponse('400',$call_response);
+								exit;	
  							}
  						}
+ 						
+ 						$this->getResponse('200',$call_response);
 
 					}else{
-						$call_response = $auth['error'];
+						$this->getResponse('401',$auth['error']);
+						exit;
 					}
 					
-					if($_REQUEST['return'] == 'html'){
-						print $call_response;
-					}else{
-						print @json_encode($call_response);
-					}
+
 				}else{
-					print json_encode('ERROR: this method is not allowed');
+					$this->getResponse('405','ERROR: this method is not allowed');
+					exit;
 				}
-				
 				
 				break;
 				
@@ -251,16 +252,13 @@ class ApiController extends Controller {
 						}else{
 							$call_response = $call_object;
 						}
+						
+						$this->getResponse('200',$call_response);
 					}else{
-						$call_response = $auth['error'];
+						$this->getResponse('401',$auth['error']);
+						exit;
 					}
 					
-				}
-				
-				if($_REQUEST['return'] == 'html'){
-					print $call_response;
-				}else{
-					print @json_encode($call_response);
 				}
 				
 				break;
@@ -286,23 +284,57 @@ class ApiController extends Controller {
 								$call_response = $call_object;
 							}
 							
+							$this->getResponse('200',$call_response);
+							
 						}else{
-							$call_response = $auth['error'];
+							$this->getResponse('401',$auth['error']);
+							exit;
 						}
 						
 					}
-				}
-				
-				if($_REQUEST['return'] == 'html'){
-					print $call_response;
 				}else{
-					print @json_encode($call_response);
+					$this->getResponse('405','ERROR: this method is not allowed');
+					exit;
 				}
 				
 				break;
 			}
 			
 		exit;
+	}
+	
+	private function getResponse($code=null,$response=null){
+	
+		switch($code){
+			case '405':
+				header('HTTP/1.1 405 Method Not Allowed'); 
+				break;
+			case '401':
+				header('HTTP/1.1 401 Unauthorized'); 
+				break;
+			case '400':
+				header('HTTP/1.1 400 Bad Request'); 
+				break;
+			case '230':
+				header('HTTP/1.1 230 Authentication Successful'); 
+				break;
+			case '202':
+				header('HTTP/1.1 202 Accepted'); 
+				break;
+			case '201':
+				header('HTTP/1.1 201 Created'); 
+				break;
+			case '200':
+				header('HTTP/1.1 200 OK'); 
+				break;
+		}
+		
+		if($_REQUEST['return'] == 'html'){
+			print $response;
+		}else{
+			print @json_encode($response);
+		}
+		
 	}
 	
 	

@@ -42,7 +42,7 @@ A Flexible Passthrough RESTfull API for Concrete5 with User,Page,Files, and Cust
 		type: "GET"
 	}).done( function(response){
 		
-		//alert(xhr.status); /* could be used with .ajax statusCode: for client-side returns
+		/* alert(xhr.status);  //could be used with .ajax statusCode: for client-side returns */
 
 		var data = $.parseJSON(response);
 		
@@ -132,7 +132,7 @@ A Flexible Passthrough RESTfull API for Concrete5 with User,Page,Files, and Cust
 			attributes: attributes
 		}
 	}).done( function(plresponse){
-		/alert(xhr.status); /* could be used with .ajax statusCode: for client-side returns
+		/* alert(xhr.status);  //could be used with .ajax statusCode: for client-side returns */
 		$('#response').append(plresponse);
 	});
 	
@@ -160,11 +160,11 @@ A Flexible Passthrough RESTfull API for Concrete5 with User,Page,Files, and Cust
 			package: 'homegroups',
 			class: 'HomegroupsList',
 			funct: 'get',
-			return: 'html', //returns respons as text instead of object
-			persist: true //will force ccm_token. example - connecting to API when site is in Maintanence mode. 
+			return: 'html', /* returns respons as text instead of object */
+			persist: true /* will force ccm_token. example - connecting to API when site is in Maintanence mode. */
 		}
 	}).done( function(customresponse){
-		/alert(xhr.status); /* could be used with .ajax statusCode: for client-side returns
+		/* alert(xhr.status);  //could be used with .ajax statusCode: for client-side returns */
 		$('#response').append( customresponse );
 	});
 	*/

@@ -7,7 +7,7 @@ A Flexible Passthrough RESTfull API for Concrete5 with User,Page,Files, and Cust
 	var token = 'SKD6DG2VQ55KPHJ15J3RS5JXL881RCFJ';
 	
 	/**********************************************/
-	//Javascript Athentication API example
+	//Javascript Authentication API example
 	/**********************************************/
 
 	//generate a token key

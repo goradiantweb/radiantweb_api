@@ -15,19 +15,16 @@ class ApiController extends Controller {
 	
 	public function view($method,$id = null){
 		
-		$request_method = strtolower($_REQUEST['rest']);
-
-		if(!$request_method || $request_method == ''){
-			$request_method = strtolower($_SERVER['REQUEST_METHOD']);
-			
-			if($request_method == 'put' || $request_method == 'delete'){
-				// Make a blank array called $_PUT
-				$_REQUEST = array();
-				// Read contents from the standard input buffer
-				//covert to $_PUT
-				parse_str(file_get_contents("php://input"),$_REQUEST);
-			}
+		$request_method = strtolower($_SERVER['REQUEST_METHOD']);
+		
+		if($request_method == 'put' || $request_method == 'delete'){
+			// Make a blank array called $_PUT
+			$_REQUEST = array();
+			// Read contents from the standard input buffer
+			//covert to $_PUT
+			parse_str(file_get_contents("php://input"),$_REQUEST);
 		}
+	
 
 		$by = ($id) ? 'ByID' : '';
 		
@@ -341,7 +338,7 @@ class ApiController extends Controller {
 	
 	private function allowedMethods($method){
 		
-		$mothod_list = array(
+		$method_list = array(
 			'Authenticate',
 			'Custom',
 			'User',
@@ -354,7 +351,7 @@ class ApiController extends Controller {
 			'Group'
 		);
 		
-		if(in_array($method,$mothod_list)){
+		if(in_array($method,$method_list)){
 			return true;
 		}else{
 			return false;

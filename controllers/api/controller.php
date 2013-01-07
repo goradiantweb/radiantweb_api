@@ -130,7 +130,8 @@ class ApiController extends Controller {
 						
 					}elseif(substr_count($method,'Authenticate') > 0){
 					
-						$call_response = ApiAuthenticate::generateToken($_REQUEST['user'],$_REQUEST['pass']);
+						$call_response = ApiAuthenticate::generateToken($_REQUEST['user'],$_REQUEST['pass'],$_REQUEST['group']);
+						print $call_response;
 						
 					}else{
 						// Page::getByID($id), User::getByUserID($id), File::getByID($id)

@@ -19,7 +19,8 @@ A Flexible Passthrough RESTfull API for Concrete5 with User,Page,Files, and Cust
 		type: "GET",
 		data: { 
 			user: 'ChadStrat',
-			pass: 'SomePass2'
+			pass: 'SomePass2',
+			group: 'ProBLog Editor' //remove this to default to "Administrator". Authenticate if user is in said "group"
 		}
 	}).done( function(plresponse){
 		$('#response').append(plresponse);

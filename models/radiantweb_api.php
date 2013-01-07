@@ -38,7 +38,7 @@ class ApiAuthenticate Extends Model{
 	}
 
 
-	public function generateToken($username,$password){
+	public function generateToken($username,$password,$group = 'Administrators'){
 	
 		Loader::model('user');
 		Loader::model('userinfo');
@@ -82,7 +82,7 @@ class ApiAuthenticate Extends Model{
 			$uo = $ui->getUserObject();
 			//return $uo;
 			$groups = $uo->uGroups;
-			if(in_array('Administrators',$groups) || $uo->superUser == 1){
+			if(in_array($group,$groups) || $uo->superUser == 1){
 				$key = $ui->getAttribute('c5_api_key');
 				if($key){
 					return $key;
@@ -97,7 +97,7 @@ class ApiAuthenticate Extends Model{
 					return $token;
 				}
 			}else{
-				$error = t('ERROR: This user does not have Admin privileges.');
+				$error = t("ERROR: This user does not have $group privileges.");
 				return $error;
 			}
 		}

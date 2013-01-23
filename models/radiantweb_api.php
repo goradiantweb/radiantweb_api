@@ -25,7 +25,7 @@ class ApiAuthenticate Extends Model{
 			return array('error'=>'ERROR: this method requires a valid API token!');
 		}
 		$db = Loader::db();
-		$uID = $db->getOne("SELECT uID FROM radiantwebApiAuth WHERE token='$token'");
+		$uID = $db->getOne("SELECT uID FROM radiantwebApiAuth WHERE token = ?", array($token));
 		
 		$ui = UserInfo::getByID($uID);
 		$key = $ui->getAttribute('c5_api_key');

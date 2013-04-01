@@ -45,7 +45,7 @@ class ApiController extends Controller {
 						//   - value : string/num ('Chad')
 						//
 						// - num : number (12)
-						$call = New $method();
+						$call = new $method();
 						$func = $request_method;
 						if(is_array($_REQUEST['filters'])){
 							foreach($_REQUEST['filters'] as $filter){
@@ -113,7 +113,17 @@ class ApiController extends Controller {
 							
 							Loader::model($model,$package);
 							
-							$call_object = New $class();
+							$call_object = new $class();
+							
+							if(is_array($_REQUEST['filters'])){
+								foreach($_REQUEST['filters'] as $filter){
+									$column = $filter['column'];
+									$modifier = $filter['modifier'];
+									$value = $filter['value'];
+									$string = "$column $modifier '$value'";
+									$call_object->filter(false,"$string");
+								}
+							}
 							
 							if($func){
 								$call_response = $call_object->$func($_REQUEST['value']);
@@ -132,7 +142,7 @@ class ApiController extends Controller {
 						
 					}else{
 						// Page::getByID($id), User::getByUserID($id), File::getByID($id)
-						$call = New $method();
+						$call = new $method();
 						if($method == 'User' && $request_method == 'get'){
 							$func = $request_method.'By'.ucfirst($method).'ID';
 						}else{
@@ -163,7 +173,7 @@ class ApiController extends Controller {
 							
 							Loader::model($model,$package);
 							
-							$call_object = New $class();
+							$call_object = new $class();
 							
 							if($func){
 								$call_response = $call_object->$func($_REQUEST['value']);
@@ -243,7 +253,7 @@ class ApiController extends Controller {
 						
 						Loader::model($model,$package);
 						
-						$call_object = New $class();
+						$call_object = new $class();
 						
 						if($func){
 							$call_response = $call_object->$func($_REQUEST['value']);
@@ -274,7 +284,7 @@ class ApiController extends Controller {
 							
 							Loader::model($model,$package);
 							
-							$call_object = New $class();
+							$call_object = new $class();
 							
 							if($func){
 								$call_response = $call_object->$func($_REQUEST['value']);
